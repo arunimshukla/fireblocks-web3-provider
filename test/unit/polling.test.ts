@@ -63,8 +63,20 @@ describe("createTransaction polling loop", function () {
         getTransactionSequence: [{ status: TransactionStateEnum.Completed }],
       });
 
-      const result = await (provider as any).createTransaction({});
-      expect(result.status).to.equal(TransactionStateEnum.Completed);
+      const originalSetTimeout = global.setTimeout;
+      let sleepCalls = 0;
+      global.setTimeout = ((handler: (...args: any[]) => void, _timeout?: number, ...args: any[]) => {
+        sleepCalls++;
+        return originalSetTimeout(handler, 0, ...args);
+      }) as typeof setTimeout;
+
+      try {
+        const result = await (provider as any).createTransaction({});
+        expect(result.status).to.equal(TransactionStateEnum.Completed);
+        expect(sleepCalls).to.equal(0);
+      } finally {
+        global.setTimeout = originalSetTimeout;
+      }
     });
 
     // Both BROADCASTING and CONFIRMING are treated as final-successful — same branch.

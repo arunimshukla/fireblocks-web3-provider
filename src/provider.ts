@@ -701,7 +701,9 @@ Available addresses: ${Object.values(this.accounts).join(', ')}.`
           throw wrappedError;
         }
       }
-      await new Promise(r => setTimeout(r, this.pollingInterval));
+      if (!FINAL_TRANSACTION_STATES.includes(currentStatus)) {
+        await new Promise(r => setTimeout(r, this.pollingInterval));
+      }
     }
 
     if (!FINAL_SUCCESSFUL_TRANSACTION_STATES.includes(currentStatus)) {
